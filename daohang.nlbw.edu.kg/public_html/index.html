@@ -1,0 +1,1072 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>南来北往导航</title>
+    <link rel="icon" type="image/x-icon" href="/icons/daohang.ico">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0a192f;
+            --text-color: #e2e8f0;
+            --primary-color: #00d4ff;
+            --accent-color: #8b5cf6;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --card-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            --particle-color: rgba(0, 212, 255, 0.8);
+        }
+        .light-theme {
+            --text-color: #1e293b;
+            --primary-color: #1e40af;
+            --accent-color: #3b82f6;
+            --card-bg: #ffffff;
+            --card-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            --particle-color: rgba(30, 64, 175, 0.8);
+        }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        html {
+            scroll-behavior: smooth;
+        }
+        body {
+            font-family: 'Roboto', Arial, sans-serif;
+            line-height: 1.6;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: color 0.3s;
+        }
+        .header {
+            position: relative;
+            background: linear-gradient(45deg, #0a192f, #00d4ff, #8b5cf6, #00ffaa, #0a192f);
+            background-size: 400%;
+            padding: 4rem 1rem;
+            text-align: center;
+            animation: gradientShift 15s ease infinite;
+            overflow: hidden;
+        }
+        .header h1 {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            text-shadow: 0 0 8px var(--primary-color);
+            cursor: pointer;
+        }
+        #digitalClock {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 1.6rem;
+            color: var(--primary-color);
+            background: rgba(0, 0, 0, 0.5);
+            padding: 1rem;
+            line-height: 1.2;
+            border: 2px solid var(--primary-color);
+            border-radius: 8px;
+            display: inline-block;
+            box-shadow: 0 0 15px var(--primary-color);
+            text-shadow: 0 0 5px var(--primary-color);
+            position: relative;
+            margin-top: 0.5rem;
+        }
+        #quote {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--card-bg);
+            padding: 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            color: var(--primary-color);
+            box-shadow: var(--card-shadow);
+        }
+        #themeToggle {
+            position: absolute;
+            bottom: 0.5rem;
+            right: 1rem;
+            background: transparent;
+            color: var(--primary-color);
+            border: 1px solid var(--primary-color);
+            padding: 0.3rem 0.8rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.7rem;
+            font-family: 'Roboto', Arial, sans-serif;
+            transition: color 0.3s, border-color 0.3s;
+        }
+        #themeToggle:hover {
+            color: var(--accent-color);
+            border-color: var(--accent-color);
+        }
+        #searchBar {
+            display: block;
+            margin: 1rem auto;
+            padding: 0.5rem;
+            width: 100%;
+            max-width: 300px;
+            border-radius: 4px;
+            border: 1px solid var(--primary-color);
+            background: var(--card-bg);
+            color: var(--text-color);
+            font-size: 0.8rem;
+        }
+        #backToTop {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: var(--primary-color);
+            color: var(--bg-color);
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 0.8rem;
+            display: none;
+            transition: background 0.3s;
+        }
+        #backToTop:hover {
+            background: var(--accent-color);
+        }
+        #particleCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        .category {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--card-shadow);
+            backdrop-filter: blur(5px);
+            animation: fadeIn 0.5s ease-out;
+            transition: transform 0.3s;
+        }
+        .category:hover {
+            transform: translateY(-5px);
+        }
+        .category h2 {
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--accent-color);
+            padding-bottom: 0.5rem;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+        .links {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+        .link-item {
+            display: flex;
+            align-items: center;
+            padding: 0.8rem;
+            border-radius: 8px;
+            text-decoration: none;
+            color: var(--text-color);
+            font-size: 0.9rem;
+            transition: all 0.3s;
+        }
+        .link-item:hover {
+            background: var(--accent-color, 0.1);
+            box-shadow: 0 0 15px var(--primary-color, 0.3);
+            transform: translateX(5px);
+            animation: pulse 0.5s;
+        }
+        .link-item i {
+            width: 30px;
+            text-align: center;
+            margin-right: 1rem;
+            color: var(--primary-color);
+            transition: transform 0.3s;
+        }
+        .link-item:hover i {
+            transform: scale(1.2);
+        }
+        footer {
+            text-align: center;
+            padding: 1rem;
+            font-size: 0.8rem;
+            color: var(--text-color);
+            text-shadow: 0 0 5px var(--primary-color);
+            margin-top: 2rem;
+        }
+        .error {
+            color: red;
+            text-align: center;
+            margin: 1rem;
+        }
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        @keyframes gridFlash {
+            0% { background: linear-gradient(45deg, #00d4ff, #8b5cf6); }
+            100% { background: var(--bg-color); }
+        }
+        @media (max-width: 768px) {
+            .links {
+                grid-template-columns: 1fr;
+            }
+            .header h1 {
+                font-size: 1rem;
+            }
+            #digitalClock {
+                font-size: 1rem;
+                padding: 0.5rem;
+            }
+            #themeToggle {
+                font-size: 0.6rem;
+                padding: 0.2rem 0.6rem;
+            }
+            #searchBar {
+                max-width: 200px;
+                font-size: 0.7rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <canvas id="particleCanvas"></canvas>
+        <h1 id="title">南来北往导航</h1>
+        <div id="digitalClock"><span id="quote"></span></div>
+        <button id="themeToggle">日间模式</button>
+    </header>
+    <div class="container">
+        <input type="text" id="searchBar" placeholder="搜索链接...">
+        <div id="content"></div>
+    </div>
+        <section class="category">
+            <h2>常用类</h2>
+            <div class="links">
+                <a href="https://chatgpt.com/" target="_blank" class="link-item">
+                    <i class="fas fa-robot"></i>
+                    ChatGPT
+                </a>
+                <a href="https://ai.dangbei.com/chat/" target="_blank" class="link-item">
+                    <i class="fas fa-robot"></i>
+                    DeepSeek（满血版）
+                </a>
+                <a href="https://mail.google.com/mail/u/0/#inbox" target="_blank" class="link-item">
+                    <i class="fas fa-envelope"></i>
+                    谷歌邮箱
+                </a>
+                <a href="https://nlbw.edu.kg/webmail/" target="_blank" class="link-item">
+                    <i class="fas fa-envelope"></i>
+                    学生邮箱
+                </a>
+                <a href="https://www.youtube.com/" target="_blank" class="link-item">
+                    <i class="fab fa-youtube"></i>
+                    YouTube
+                </a>
+                <a href="https://uk10.neodns.info:2222/evo/" target="_blank" class="link-item">
+                    <i class="fas fa-server"></i>
+                    主机后台
+                </a>
+                <a href="https://translate.google.com/?hl=zh-CN&sl=zh-CN&tl=en&op=translate" target="_blank" class="link-item">
+                    <i class="fas fa-language"></i>
+                    谷歌翻译
+                </a>
+                <a href="https://112583.xyz/" target="_blank" class="link-item">
+                    <i class="fas fa-link"></i>
+                    蔓越莓
+                </a>
+            </div>
+        </section>
+
+        <section class="category">
+            <h2>AI助手</h2>
+            <div class="links">
+                <a href="https://chatgpt.com/" target="_blank" class="link-item">
+                    <i class="fas fa-robot"></i>
+                    ChatGPT
+                </a>
+                <a href="https://grok.com/" target="_blank" class="link-item">
+                    <i class="fas fa-robot"></i>
+                    Grok
+                </a>
+                <a href="https://chat.deepseek.com/" target="_blank" class="link-item">
+                    <i class="fas fa-robot"></i>
+                    DeepSeek
+                </a>
+                <a href="https://ai.dangbei.com/chat/" target="_blank" class="link-item">
+                    <i class="fas fa-robot"></i>
+                    DeepSeek（满血版）
+                </a>
+                <a href="https://gemini.google.com/" target="_blank" class="link-item">
+                    <i class="fas fa-robot"></i>
+                    Gemini
+                </a>
+                <a href="https://openi.pcl.ac.cn/" target="_blank" class="link-item">
+                    <i class="fas fa-robot"></i>
+                    启智AI
+                </a>
+                <a href="https://claude.ai/upgrade" target="_blank" class="link-item">
+                    <i class="fas fa-robot"></i>
+                    Claude
+                </a>
+                <a href="https://app.immersity.ai/" target="_blank" class="link-item">
+                    <i class="fas fa-paint-brush"></i>
+                    AI画画
+                </a>
+            </div>
+        </section>
+
+        <section class="category">
+            <h2>邮箱</h2>
+            <div class="links">
+                <a href="https://mail.google.com/mail/u/0/#inbox" target="_blank" class="link-item">
+                    <i class="fas fa-envelope"></i>
+                    谷歌邮箱
+                </a>
+                <a href="https://appmail10.mail.10086.cn/" target="_blank" class="link-item">
+                    <i class="fas fa-envelope"></i>
+                    139邮箱
+                </a>
+                <a href="https://mail.qq.com/" target="_blank" class="link-item">
+                    <i class="fas fa-envelope"></i>
+                    QQ邮箱
+                </a>
+                <a href="https://account.proton.me/mail" target="_blank" class="link-item">
+                    <i class="fas fa-envelope"></i>
+                    Proton邮箱
+                </a>
+                <a href="https://dashi.163.com/login/?from=webmaster_relogin" target="_blank" class="link-item">
+                    <i class="fas fa-envelope"></i>
+                    163邮箱
+                </a>
+                <a href="https://nlbw.edu.kg/webmail/" target="_blank" class="link-item">
+                    <i class="fas fa-envelope"></i>
+                    学生邮箱
+                </a>
+            </div>
+        </section>
+
+        <section class="category">
+            <h2>虚拟币相关</h2>
+            <div class="links">
+                <a href="https://www.bitget.com/zh-CN/futures/usdt/BTCUSDT" target="_blank" class="link-item">
+                    <i class="fas fa-coins"></i>
+                    Bitget
+                </a>
+                <a href="https://www.bybit.com/trade/usdt/BTCUSDT" target="_blank" class="link-item">
+                    <i class="fas fa-coins"></i>
+                    Bybit
+                </a>
+                <a href="https://www.weex.com/zh-CN/futures/BTC-USDT" target="_blank" class="link-item">
+                    <i class="fas fa-coins"></i>
+                    Weex
+                </a>
+                <a href="https://www.okx.com/zh-hans" target="_blank" class="link-item">
+                    <i class="fas fa-coins"></i>
+                    欧意
+                </a>
+                <a href="https://www.hugging.com/zh/login" target="_blank" class="link-item">
+                    <i class="fas fa-coins"></i>
+                    Hugging
+                </a>
+                <a href="https://www.binance.com/zh-CN" target="_blank" class="link-item">
+                    <i class="fas fa-coins"></i>
+                    币安
+                </a>
+                <a href="https://tronscan.org/" target="_blank" class="link-item">
+                    <i class="fas fa-coins"></i>
+                    波场
+                </a>
+                <a href="https://www.commex.com/zh-CN/my/dashboard" target="_blank" class="link-item">
+                    <i class="fas fa-coins"></i>
+                    Commex
+                </a>
+                <a href="https://etherscan.io/login" target="_blank" class="link-item">
+                    <i class="fas fa-coins"></i>
+                    以太链
+                </a>
+                <a href="https://xeggex.com/login" target="_blank" class="link-item">
+                    <i class="fas fa-coins"></i>
+                    Xeggex
+                </a>
+                <a href="https://www.aicoin.com/zh-Hans/news/all" target="_blank" class="link-item">
+                    <i class="fas fa-coins"></i>
+                    Aicoin
+                </a>
+            </div>
+        </section>
+
+        <section class="category">
+            <h2>股票类</h2>
+            <div class="links">
+                <a href="https://client.schwab.com/Areas/Access/Login?SessionTimeOut=y&ReturnUrl=%2fclientapps%2faccounts%2fsummary%2f" target="_blank" class="link-item">
+                    <i class="fas fa-chart-line"></i>
+                    嘉信理财
+                </a>
+                <a href="https://longbridge.com/hk/zh-CN" target="_blank" class="link-item">
+                    <i class="fas fa-chart-line"></i>
+                    长桥证券
+                </a>
+                <a href="https://www.itiger.com/sg/hans/" target="_blank" class="link-item">
+                    <i class="fas fa-chart-line"></i>
+                    老虎证券
+                </a>
+                <a href="https://bet.hkjc.com/ch/football/inplay?tournid=50000051" target="_blank" class="link-item">
+                    <i class="fas fa-futbol"></i>
+                    香港马会
+                </a>
+            </div>
+        </section>
+
+        <section class="category">
+            <h2>影视类</h2>
+            <div class="links">
+                <a href="https://www.iyf.tv/" target="_blank" class="link-item">
+                    <i class="fas fa-film"></i>
+                    爱壹帆
+                </a>
+                <a href="https://tv.onetv.one/" target="_blank" class="link-item">
+                    <i class="fas fa-film"></i>
+                    影视导航
+                </a>
+                <a href="https://www.youtube.com/" target="_blank" class="link-item">
+                    <i class="fab fa-youtube"></i>
+                    YouTube
+                </a>
+                <a href="https://www.tiktok.com/" target="_blank" class="link-item">
+                    <i class="fab fa-tiktok"></i>
+                    TikTok
+                </a>
+                <a href="http://www.kuafuzys.com/forum-5.htm" target="_blank" class="link-item">
+                    <i class="fas fa-film"></i>
+                    4K电影
+                </a>
+                <a href="https://www.netflixgc.com/" target="_blank" class="link-item">
+                    <i class="fas fa-film"></i>
+                    奈飞影视
+                </a>
+                <a href="https://www.iptvindex.com/" target="_blank" class="link-item">
+                    <i class="fas fa-film"></i>
+                    聚合
+                </a>
+                <a href="https://www.ngrjfx.com/category/tv" target="_blank" class="link-item">
+                    <i class="fas fa-tv"></i>
+                    TV软件
+                </a>
+            </div>
+        </section>
+
+        <section class="category">
+            <h2>社交类</h2>
+            <div class="links">
+                <a href="https://discord.com/" target="_blank" class="link-item">
+                    <i class="fab fa-discord"></i>
+                    Discord
+                </a>
+                <a href="https://web.telegram.org/k/" target="_blank" class="link-item">
+                    <i class="fab fa-telegram"></i>
+                    Telegram
+                </a>
+                <a href="https://www.facebook.com/" target="_blank" class="link-item">
+                    <i class="fab fa-facebook"></i>
+                    Facebook
+                </a>
+                <a href="https://x.com/" target="_blank" class="link-item">
+                    <i class="fab fa-x-twitter"></i>
+                    X
+                </a>
+                <a href="https://web.whatsapp.com/" target="_blank" class="link-item">
+                    <i class="fab fa-whatsapp"></i>
+                    WhatsApp
+                </a>
+            </div>
+        </section>
+
+        <section class="category">
+            <h2>IP查询测速</h2>
+            <div class="links">
+                <a href="https://ip111.cn/" target="_blank" class="link-item">
+                    <i class="fas fa-network-wired"></i>
+                    IP地址
+                </a>
+                <a href="https://whoer.com/zh/" target="_blank" class="link-item">
+                    <i class="fas fa-search"></i>
+                    地址查询
+                </a>
+                <a href="https://scamalytics.com/ip" target="_blank" class="link-item">
+                    <i class="fas fa-shield-alt"></i>
+                    IP纯净度
+                </a>
+                <a href="https://fast.com/" target="_blank" class="link-item">
+                    <i class="fas fa-tachometer-alt"></i>
+                    外网测速
+                </a>
+                <a href="https://myplugin.speedtest.cn/#/" target="_blank" class="link-item">
+                    <i class="fas fa-tachometer-alt"></i>
+                    内网测速
+                </a>
+                <a href="https://ipinfo.io/dashboard?service=google&loginState=attach" target="_blank" class="link-item">
+                    <i class="fas fa-search"></i>
+                    IP探针
+                </a>
+            </div>
+        </section>
+
+        <section class="category">
+            <h2>服务器与域名类</h2>
+            <div class="links">
+                <a href="https://github.com/explore" target="_blank" class="link-item">
+                    <i class="fab fa-github"></i>
+                    GitHub
+                </a>
+                <a href="https://www.converts.cn/onlinehtml.html" target="_blank" class="link-item">
+                    <i class="fas fa-code"></i>
+                    HTML代码在线
+                </a>
+                <a href="https://dash.cloudflare.com/" target="_blank" class="link-item">
+                    <i class="fas fa-cloud"></i>
+                    Cloudflare
+                </a>
+                <a href="https://my.silicomnetwork.com/index.php?fuse=home&view=dashboard" target="_blank" class="link-item">
+                    <i class="fas fa-server"></i>
+                    永久主机
+                </a>
+                <a href="https://wuk.neodns.info:2222/evo/login" target="_blank" class="link-item">
+                    <i class="fas fa-server"></i>
+                    小主机后台
+                </a>
+                <a href="https://cloud.hosthatch.com/login" target="_blank" class="link-item">
+                    <i class="fas fa-server"></i>
+                    澳大利亚
+                </a>
+                <a href="https://nic.ua/en/login" target="_blank" class="link-item">
+                    <i class="fas fa-server"></i>
+                    乌克兰
+                </a>
+                <a href="https://www.cloudns.net/" target="_blank" class="link-item">
+                    <i class="fas fa-cloud"></i>
+                    CloudNS
+                </a>
+                <a href="https://sso.godaddy.com/" target="_blank" class="link-item">
+                    <i class="fas fa-globe"></i>
+                    GoDaddy112583
+                </a>
+                <a href="https://panel7.serv00.com/login/?next=/" target="_blank" class="link-item">
+                    <i class="fas fa-server"></i>
+                    Serv00-nlbw
+                </a>
+                <a href="https://panel13.serv00.com/login/" target="_blank" class="link-item">
+                    <i class="fas fa-server"></i>
+                    Serv00-nlbwxg
+                </a>
+                <a href="https://infini-cloud.net/en/modules/mypage/usage/" target="_blank" class="link-item">
+                    <i class="fas fa-cloud"></i>
+                    日本网盘
+                </a>
+                <a href="https://www.namesilo.com/login?redirect=/account_domains.php" target="_blank" class="link-item">
+                    <i class="fas fa-globe"></i>
+                    NameSilo
+                </a>
+                <a href="https://neverinstall.com/" target="_blank" class="link-item">
+                    <i class="fas fa-cloud"></i>
+                    云电脑
+                </a>
+                <a href="https://replit.com/" target="_blank" class="link-item">
+                    <i class="fas fa-code"></i>
+                    Replit
+                </a>
+                <a href="https://dash.infinityfree.com/accounts" target="_blank" class="link-item">
+                    <i class="fas fa-server"></i>
+                    InfinityFree
+                </a>
+                <a href="https://vercel.com/pans-projects-b48621d6" target="_blank" class="link-item">
+                    <i class="fas fa-cloud"></i>
+                    Vercel
+                </a>
+                <a href="https://app.northflank.com/t/nlbws-team" target="_blank" class="link-item">
+                    <i class="fas fa-cloud"></i>
+                    Northflank
+                </a>
+                <a href="https://idx.google.com/" target="_blank" class="link-item">
+                    <i class="fas fa-mobile-alt"></i>
+                    模拟手机
+                </a>
+                <a href="https://dash.domain.digitalplat.org/" target="_blank" class="link-item">
+                    <i class="fas fa-globe"></i>
+                    域名每年续费
+                </a>
+                <a href="https://my.dataonline.vn/" target="_blank" class="link-item">
+                    <i class="fas fa-server"></i>
+                    越南服务器
+                </a>
+                <a href="https://cctld.kg/en/pid/domains" target="_blank" class="link-item">
+                    <i class="fas fa-globe"></i>
+                    域名后台AI-349710-KG
+                </a>
+                <a href="https://www.hidoha.net/" target="_blank" class="link-item">
+                    <i class="fas fa-globe"></i>
+                    nlbw.hidns.vip
+                </a>
+                <a href="https://us-east-2.console.aws.amazon.com/console/home?region=us-east-2" target="_blank" class="link-item">
+                    <i class="fas fa-cloud"></i>
+                    AWS
+                </a>
+                <a href="https://xn--mes358a9urctx.com/#/login" target="_blank" class="link-item">
+                    <i class="fas fa-plane"></i>
+                    顶级机场
+                </a>
+                <a href="https://us1.make.com/" target="_blank" class="link-item">
+                    <i class="fas fa-tools"></i>
+                    Make
+                </a>
+                <a href="https://lowendbox.com/" target="_blank" class="link-item">
+                    <i class="fas fa-server"></i>
+                    最佳VPS
+                </a>
+                <a href="https://vps.blackfriday/" target="_blank" class="link-item">
+                    <i class="fas fa-server"></i>
+                    VPS闪购
+                </a>
+            </div>
+        </section>
+
+        <section class="category">
+            <h2>VISA卡</h2>
+            <div class="links">
+                <a href="https://app.pokepay.cc/" target="_blank" class="link-item">
+                    <i class="fas fa-credit-card"></i>
+                    实体卡
+                </a>
+                <a href="https://www.worldfirst.com.cn/" target="_blank" class="link-item">
+                    <i class="fas fa-credit-card"></i>
+                    万里汇
+                </a>
+                <a href="https://wise.com/" target="_blank" class="link-item">
+                    <i class="fas fa-credit-card"></i>
+                    Wise
+                </a>
+                <a href="https://www.paypal.com/us/webapps/mpp/home" target="_blank" class="link-item">
+                    <i class="fas fa-credit-card"></i>
+                    PayPal
+                </a>
+            </div>
+        </section>
+
+        <section class="category">
+            <h2>电话卡</h2>
+            <div class="links">
+                <a href="https://sms-activate.ru/#settings" target="_blank" class="link-item">
+                    <i class="fas fa-sim-card"></i>
+                    接码平台
+                </a>
+                <a href="http://app.redteago.com/invite/index.html?id=HUPA0002" target="_blank" class="link-item">
+                    <i class="fas fa-sim-card"></i>
+                    Redteago
+                </a>
+                <a href="http://eskimo.travel/MW75858" target="_blank" class="link-item">
+                    <i class="fas fa-sim-card"></i>
+                    Eskimo
+                </a>
+                <a href="https://www.clubsim.com.hk/zh/hotItem/" target="_blank" class="link-item">
+                    <i class="fas fa-sim-card"></i>
+                    香港卡
+                </a>
+                <a href="https://simworld.net/SIMworld/main/tc/login" target="_blank" class="link-item">
+                    <i class="fas fa-sim-card"></i>
+                    Simworld
+                </a>
+                <a href="https://eshop.ooredoo.qa/en" target="_blank" class="link-item">
+                    <i class="fas fa-sim-card"></i>
+                    卡塔尔
+                </a>
+                <a href="https://www.giffgaff.com/freesim-international" target="_blank" class="link-item">
+                    <i class="fas fa-sim-card"></i>
+                    英国卡
+                </a>
+            </div>
+        </section>
+
+        <section class="category">
+            <h2>有趣的网</h2>
+            <div class="links">
+                <a href="https://zh.wikihow.com/%E9%A6%96%E9%A1%B5" target="_blank" class="link-item">
+                    <i class="fas fa-book"></i>
+                    指南网站
+                </a>
+                <a href="https://fish.audio/zh-CN/auth/" target="_blank" class="link-item">
+                    <i class="fas fa-microphone"></i>
+                    声音克隆
+                </a>
+                <a href="https://hotkeycheatsheet.com/zh" target="_blank" class="link-item">
+                    <i class="fas fa-keyboard"></i>
+                    快捷键
+                </a>
+                <a href="https://www.x6d.com/" target="_blank" class="link-item">
+                    <i class="fas fa-gamepad"></i>
+                    小刀娱乐
+                </a>
+                <a href="https://dizhi.abskoop.com/" target="_blank" class="link-item">
+                    <i class="fas fa-share"></i>
+                    A姐分享
+                </a>
+                <a href="https://www.an2.net/zim/" target="_blank" class="link-item">
+                    <i class="fas fa-table"></i>
+                    田字格生成
+                </a>
+                <a href="https://cobalt.tools/" target="_blank" class="link-item">
+                    <i class="fas fa-download"></i>
+                    下载神器
+                </a>
+                <a href="https://www.nbfox.com/" target="_blank" class="link-item">
+                    <i class="fas fa-paint-brush"></i>
+                    麦田艺术
+                </a>
+                <a href="https://tjy-gitnub.github.io/win12/desktop.html" target="_blank" class="link-item">
+                    <i class="fas fa-desktop"></i>
+                    Win12在线
+                </a>
+                <a href="https://pingti.app/" target="_blank" class="link-item">
+                    <i class="fas fa-exchange-alt"></i>
+                    平替
+                </a>
+            </div>
+        </section>
+
+        <section class="category">
+            <h2>杂七杂八</h2>
+            <div class="links">
+                <a href="https://account.microsoft.com/account?refd=www.microsoft.com&ru=https%3A%2F%2Faccount.microsoft.com%2F%3Frefd%3Dwww.microsoft.com&destrt=home.landing&pageName=Account" target="_blank" class="link-item">
+                    <i class="fab fa-microsoft"></i>
+                    微软主页
+                </a>
+                <a href="https://fxg.jinritemai.com/login/common?extra=%7B%22target_url%22%3A%22https%3A%2F%2Ffxg.jinritemai.com%2Fffa%2Fgov%2Fsettle%2Fhome%22%7D" target="_blank" class="link-item">
+                    <i class="fas fa-store"></i>
+                    抖店
+                </a>
+                <a href="https://loginmyseller.taobao.com/?from=taobaoindex&f=top&style=&sub=true&redirect_url=https%3A%2F%2Fmyseller.taobao.com%2Fhome.htm%2FQnworkbenchHome%2F" target="_blank" class="link-item">
+                    <i class="fas fa-store"></i>
+                    千牛
+                </a>
+                <a href="https://borderfree.app/fulldownload/" target="_blank" class="link-item">
+                    <i class="fas fa-globe"></i>
+                    Web3浏览器
+                </a>
+                <a href="https://www.icloud.com/" target="_blank" class="link-item">
+                    <i class="fab fa-apple"></i>
+                    苹果ID
+                </a>
+                <a href="https://www.ucloudcam.cn/login" target="_blank" class="link-item">
+                    <i class="fas fa-camera"></i>
+                    监控
+                </a>
+            </div>
+        </section>
+
+        <section class="category">
+            <h2>edu通过</h2>
+            <div class="links">
+                <a href="https://app.vizcom.ai/auth" target="_blank" class="link-item">
+                    <i class="fas fa-paint-brush"></i>
+                    Vizcom
+                </a>
+                <a href="https://www.figma.com/" target="_blank" class="link-item">
+                    <i class="fas fa-pen-ruler"></i>
+                    Figma
+                </a>
+                <a href="https://www.notion.so/?cookie_sync_completed=true" target="_blank" class="link-item">
+                    <i class="fas fa-sticky-note"></i>
+                    Notion
+                </a>
+            </div>
+        </section>
+    </div>
+
+      <footer>
+        制作者：南来北往，时间：2025年5月20日
+    </footer>
+    <button id="backToTop"><i class="fas fa-arrow-up"></i></button>
+    <script>
+        window.addEventListener('DOMContentLoaded', () => {
+            let isDataLoaded = false; // 防止重复加载
+            async function loadData() {
+                if (isDataLoaded) {
+                    console.log('loadData 已执行，跳过重复调用');
+                    return;
+                }
+                isDataLoaded = true;
+                console.log('开始加载数据:', new Date().toISOString());
+                const contentDiv = document.getElementById('content');
+                contentDiv.innerHTML = ''; // 强制清空
+                const apiPaths = [
+                    'https://daohang.nlbw.edu.kg/manage.php?action=categories',
+                    'manage.php?action=categories'
+                ];
+                let categories, links;
+                for (const path of apiPaths) {
+                    try {
+                        console.log(`尝试路径: ${path}`);
+                        const categoriesRes = await fetch(path, { method: 'GET', credentials: 'same-origin' });
+                        if (categoriesRes.ok) {
+                            categories = await categoriesRes.json();
+                            console.log('分类数据:', categories);
+                            const linksPath = path.replace('categories', 'links');
+                            const linksRes = await fetch(linksPath, { method: 'GET', credentials: 'same-origin' });
+                            if (linksRes.ok) {
+                                links = await linksRes.json();
+                                console.log('链接数据:', links);
+                                break;
+                            } else {
+                                throw new Error(`链接请求失败: ${linksRes.status} ${linksRes.statusText} at ${linksPath}`);
+                            }
+                        } else {
+                            throw new Error(`分类请求失败: ${categoriesRes.status} ${linksRes.statusText} at ${path}`);
+                        }
+                    } catch (err) {
+                        console.warn(`路径 ${path} 失败:`, err);
+                        continue;
+                    }
+                }
+                if (!categories || !links) {
+                    contentDiv.innerHTML = `<p class="error">加载失败: 无法连接到 manage.php。错误详情: ${apiPaths.join(' 或 ')}</p>`;
+                    console.error('加载失败，所有路径均不可用');
+                    return;
+                }
+                if (categories.length === 0) {
+                    contentDiv.innerHTML = '<p class="error">暂无分类，请在管理页面添加</p>';
+                    console.log('无分类数据');
+                    return;
+                }
+                categories.forEach(cat => {
+                    const section = document.createElement('section');
+                    section.className = 'category';
+                    section.innerHTML = `<h2>${cat.name}</h2><div class="links"></div>`;
+                    const linksDiv = section.querySelector('.links');
+                    const catLinks = links.filter(link => parseInt(link.category_id) === parseInt(cat.id));
+                    if (catLinks.length === 0) {
+                        linksDiv.innerHTML = '<p>暂无链接</p>';
+                    } else {
+                        catLinks.forEach(link => {
+                            linksDiv.innerHTML += `
+                                <a href="${link.url}" target="_blank" class="link-item">
+                                    <i class="${link.icon}"></i>${link.name}
+                                </a>`;
+                        });
+                    }
+                    contentDiv.appendChild(section);
+                });
+                console.log('数据渲染完成，分类数:', categories.length, '链接数:', links.length);
+                bindSearch();
+            }
+            function bindSearch() {
+                const searchBar = document.getElementById('searchBar');
+                searchBar.addEventListener('input', () => {
+                    const query = searchBar.value.toLowerCase();
+                    document.querySelectorAll('.category').forEach(category => {
+                        const links = category.querySelectorAll('.link-item');
+                        let hasMatch = false;
+                        links.forEach(link => {
+                            const text = link.textContent.toLowerCase();
+                            link.style.display = text.includes(query) ? 'flex' : 'none';
+                            if (text.includes(query)) hasMatch = true;
+                        });
+                        category.style.display = hasMatch || query === '' ? 'block' : 'none';
+                    });
+                });
+            }
+            loadData(); // 仅调用一次
+            const themeToggle = document.getElementById('themeToggle');
+            const body = document.body;
+            if (localStorage.getItem('theme') === 'light') {
+                body.classList.add('light-theme');
+                themeToggle.textContent = '夜间模式';
+            }
+            themeToggle.addEventListener('click', () => {
+                body.classList.toggle('light-theme');
+                themeToggle.textContent = body.classList.contains('light-theme') ? '夜间模式' : '日间模式';
+                localStorage.setItem('theme', body.classList.contains('light-theme') ? 'light' : 'dark');
+            });
+            function updateClock() {
+                const now = new Date().toLocaleString('zh-CN', {
+                    timeZone: 'Asia/Shanghai',
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit',
+                    hour12: false
+                });
+                const clock = document.getElementById('digitalClock');
+                if (clock) clock.textContent = now;
+            }
+            updateClock();
+            setInterval(updateClock, 1000);
+            const motivationalQuotes = [
+                '时间像素化，未来加速中！',
+                '每秒都在刷新可能！',
+                '科技点亮，导航未来！',
+                '代码飞舞，时间永恒！',
+                '像素跳跃，星际穿梭！'
+            ];
+            const clock = document.getElementById('digitalClock');
+            const quote = document.getElementById('quote');
+            let hoverTimeout;
+            if (clock && quote) {
+                clock.addEventListener('mouseenter', () => {
+                    hoverTimeout = setTimeout(() => {
+                        quote.textContent = motivationalQuotes[Math.floor(Math.random() * motivationalQuotes.length)];
+                        quote.style.display = 'block';
+                    }, 3000);
+                });
+                clock.addEventListener('mouseleave', () => {
+                    clearTimeout(hoverTimeout);
+                    quote.style.display = 'none';
+                });
+            }
+            const backToTop = document.getElementById('backToTop');
+            window.addEventListener('scroll', () => {
+                backToTop.style.display = window.scrollY > 300 ? 'block' : 'none';
+            });
+            backToTop.addEventListener('click', () => {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+            const canvas = document.getElementById('particleCanvas');
+            const ctx = canvas.getContext('2d');
+            let particles = [];
+            let explosionParticles = [];
+            function resizeCanvas() {
+                if (canvas) {
+                    canvas.width = window.innerWidth;
+                    canvas.height = document.querySelector('.header').offsetHeight;
+                }
+            }
+            window.addEventListener('resize', resizeCanvas);
+            resizeCanvas();
+            class Particle {
+                constructor(isExplosion = false) {
+                    this.x = isExplosion ? canvas.width / 2 : Math.random() * canvas.width;
+                    this.y = isExplosion ? canvas.height / 2 : Math.random() * canvas.height;
+                    this.size = Math.random() * 3 + 1;
+                    this.speedX = isExplosion ? (Math.random() * 6 - 3) : (Math.random() * 1 - 0.5);
+                    this.speedY = isExplosion ? (Math.random() * 6 - 3) : (Math.random() * 1 - 0.5);
+                    this.color = isExplosion ? `hsl(${Math.random() * 360}, 70%, 70%)` : 'var(--particle-color)';
+                    this.isExplosion = isExplosion;
+                    this.life = isExplosion ? 45 : Infinity;
+                    this.opacity = 1;
+                    this.prevX = this.x;
+                    this.prevY = this.y;
+                }
+                update() {
+                    this.prevX = this.x;
+                    this.prevY = this.y;
+                    this.x += this.speedX;
+                    this.y += this.speedY;
+                    if (this.size > 0.2) this.size -= this.isExplosion ? 0.1 : 0.01;
+                    if (this.isExplosion) this.life--;
+                    this.opacity = Math.random() > 0.95 ? 0.5 : 1;
+                    if (this.x < 0 || this.x > canvas.width) this.speedX *= -1;
+                    if (this.y < 0 || this.y > canvas.height) this.speedY *= -1;
+                }
+                draw() {
+                    ctx.globalAlpha = this.opacity * 0.7;
+                    ctx.strokeStyle = this.color;
+                    ctx.beginPath();
+                    ctx.moveTo(this.prevX, this.prevY);
+                    ctx.lineTo(this.x, this.y);
+                    ctx.stroke();
+                    ctx.globalAlpha = this.opacity;
+                    ctx.fillStyle = this.color;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.globalAlpha = 1;
+                }
+            }
+            function initParticles() {
+                particles = [];
+                const particleCount = 25;
+                for (let i = 0; i < particleCount; i++) {
+                    particles.push(new Particle());
+                }
+            }
+            function triggerExplosion() {
+                explosionParticles = [];
+                const explosionCount = 150;
+                for (let i = 0; i < explosionCount; i++) {
+                    explosionParticles.push(new Particle(true));
+                }
+                setTimeout(() => explosionParticles = [], 1500);
+            }
+            function animate() {
+                if (ctx) {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    particles.forEach(particle => {
+                        particle.update();
+                        particle.draw();
+                    });
+                    explosionParticles.forEach(particle => {
+                        if (particle.life > 0) {
+                            particle.update();
+                            particle.draw();
+                        }
+                    });
+                    requestAnimationFrame(animate);
+                }
+            }
+            initParticles();
+            animate();
+            const title = document.getElementById('title');
+            let clickCount = 0;
+            let lastClickTime = 0;
+            title.addEventListener('click', () => {
+                const currentTime = Date.now();
+                if (currentTime - lastClickTime < 500) {
+                    clickCount++;
+                } else {
+                    clickCount = 1;
+                }
+                lastClickTime = currentTime;
+                if (clickCount >= 5) {
+                    triggerExplosion();
+                    clickCount = 0;
+                } else {
+                    window.location.href = 'https://nlbw.edu.kg';
+                }
+            });
+            let keySequence = [];
+            document.addEventListener('keydown', (e) => {
+                keySequence.push(e.key.toUpperCase());
+                if (keySequence.length > 4) keySequence.shift();
+                if (keySequence.join('') === 'GROK') {
+                    body.style.animation = 'gridFlash 1.5s';
+                    setTimeout(() => body.style.animation = '', 1500);
+                    keySequence = [];
+                }
+            });
+        });
+    </script>
+</body>
+</html>

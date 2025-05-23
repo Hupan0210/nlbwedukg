@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="refresh" content="3; url=https://ukda100.directadminhostserver.com/roundcube/">
+    <title>学生邮件系统登录 - mail.nlbw.edu.kg</title>
+    <style>
+        body { 
+            font-family: 'Segoe UI', Verdana, sans-serif;
+            background-color: #f5f6fa;
+            margin: 0;
+            padding: 20px;
+            color: #2f3640;
+        }
+        .container {
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 30px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        .alert {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .credentials {
+            background: #e9f5ff;
+            padding: 20px;
+            border-left: 4px solid #3498db;
+            margin: 25px 0;
+        }
+        .countdown {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 style="text-align: center;">学生邮件系统访问指引</h1>
+        
+        <div class="alert">
+            ⚠️ 您将在 <span class="countdown" id="countdown">3</span> 秒后自动跳转到登录页面...
+        </div>
+
+        <div class="credentials">
+            <h3>首次登录凭证：</h3>
+            <p>▪ 用户名: <strong>分配的@nlbw.edu.kg</strong></p>
+            <p>▪ 初始密码: <strong style="color: #c0392b;">Abc123</strong></p>
+        </div>
+
+        <div style="margin-top: 30px;">
+            <p>如果未自动跳转，请手动访问：
+                <a href="https://ukda100.directadminhostserver.com/roundcube/" style="color: #2980b9; text-decoration: none;">
+                    ➤ 立即访问邮件系统
+                </a>
+            </p>
+            <p style="color: #7f8c8d; margin-top: 20px;">
+                🔒 安全提示：首次登录后请立即修改密码，建议使用大小写字母+数字+符号的组合
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // 倒计时动态显示
+        let seconds = 3;
+        const countdownElement = document.getElementById('countdown');
+        
+        const timer = setInterval(() => {
+            seconds--;
+            countdownElement.textContent = seconds;
+            if(seconds <= 0) clearInterval(timer);
+        }, 1000);
+    </script>
+</body>
+</html>
